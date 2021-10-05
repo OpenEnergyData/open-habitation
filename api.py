@@ -1,3 +1,4 @@
+from typing import Literal
 from api_prototype import *
 import falcon
 import json
@@ -11,6 +12,17 @@ from pandas_datapackage_reader import read_datapackage
 from apispec import APISpec
 from swagger_ui import falcon_api_doc
 
+import psycopg2 as pg
+from psycopg2 import sql
+
+host = "0.0.0.0"
+port = "5434"
+database="geo_admin"
+username = "testuser"
+password = "test123"
+
+connection = pg.connect(database=database, user=username, password=password, host=host, port=port)
+
 app = application = falcon.App()
 
 
@@ -20,6 +32,41 @@ json_handler = media.JSONHandler(
 
 
 result_cache = []
+
+
+class ElectricityProduction():
+    def on_get(self, req, res):
+        """Response to GET request for the building's electricity production 
+
+        Parameters
+        ----------
+        req : [type]
+            [description]
+        res : [type]
+            [description]
+        """
+
+class AddressSearch():
+
+    def on_get(self, req, resp):
+
+        #print("received get request on /addresssearch")
+        #print(req.params["term"])
+        pattern = req.params["term"]+"%%"
+        cursor = connection.cursor()
+        cursor.execute("select \"CompleteAddress\" from electricity_production where \"CompleteAddress\" ilike %(ilike)s order by \"Address\" limit 10" , {"ilike":pattern})
+        suggestions = cursor.fetchall()
+        suggestions = [i[0] for i in suggestions]
+        #print(suggestions)
+        #print(json.dumps(availableTags))
+        resp.media = suggestions
+        resp.media_handler = json_handler
+
+
+
+street_search = AddressSearch()
+app.add_route("/addresssearch", street_search)
+
 
 
 class ProductionResource:
@@ -53,7 +100,17 @@ class ProductionResource:
                 description: JSON blob
         """
         obj = req.get_media()
+        print("Address POSTED!!")
+        print(req)
+        print(type(req))
+        print(obj)
+        print(type(obj))
         address = obj.get('address').strip()
+        print(obj["address"])
+        print(obj.get("address"))
+        print(type(obj.get("address")))
+        print(address)
+        print(type(address))
         data = None
         for r in result_cache:
             if r['address'] == address:
@@ -68,11 +125,12 @@ class ProductionResource:
                 pass
         resp.media = result_cache
         resp.media_handler = json_handler
-        # get_production_info_string(address)
+        get_production_info_string(address)
 
 
 prod_res = ProductionResource()
 app.add_route("/api/production/yearly", prod_res)
+
 
 
 spec = APISpec(
@@ -85,9 +143,8 @@ spec = APISpec(
 spec.path(resource=prod_res)
 
 # BUG! https://github.com/PWZER/swagger-ui-py/issues/29
-# falcon_api_doc(app, config=spec.to_dict(), url_prefix='/api/doc/', title='API doc')
-# print(spec.to_yaml())
-
+falcon_api_doc(app, config=spec.to_dict(), url_prefix='/api/doc/', title='API doc')
+#print(spec.to_yaml())
 
 class IndexResource(object):
     def on_get(self, req, resp):
@@ -98,6 +155,7 @@ class IndexResource(object):
 
 
 app.add_route('/', IndexResource())
+app.add_route('/js/script.js', Path('./js/script.js').resolve())
 app.add_static_route('/public', Path('./public/').resolve())
 
 

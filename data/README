@@ -1,2 +1,4 @@
-Data in CSV format can be added for processing here.
-See README.md in the root folder for instructions.
+The folling data should be put in this folder:
+
+- .csv files of electricity production plants to put in PostgreSQL database. It can be downloaded here: https://www.geocat.ch/geonetwork/srv/ger/catalog.search#/search?resultType=details&sortBy=relevance&any=ch.bfe.elektrizitaetsproduktionsanlagen&from=1&to=20 
+  after download,e xtract the folder in this directory (without renaming the folder).

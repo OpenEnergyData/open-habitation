@@ -9,6 +9,17 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/css/bootstrap.min.css" integrity="sha512-6KY5s6UI5J7SVYuZB4S/CZMyPylqyyNZco376NM2Z8Sb8OxEdp02e1jkKk/wZxIEmjQ6DRCEBhni+gpr9c4tvA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/js/bootstrap.min.js" integrity="sha512-ewfXo9Gq53e1q1+WDTjaHAGZ8UvCWq0eXONhwDuIoaH8xz2r96uoAYaQCm1oQhnBfRXrvJztNXFsTloJfgbL5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script
+			  src="https://code.jquery.com/jquery-3.6.0.min.js"
+			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+			  crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
 </head>
 
 <body>
@@ -21,14 +32,13 @@
     <p>Swiss open habitation API</p>
     <p style="color:#FF0000">Please note: This basic example shows the expected annual energy production of a 1 kWp PV system at a specific site with slope 35° and aspect 60° (west - south-west). This example is just valid for buildings with an existing PV system. </p>
 </header>
-
 <article>
     <h3>Basic Example</h3>
 
 
     <div class="ui-widget station">
       <form>
-        <input class="form-control" id="search" placeholder="Enter an address ..." />
+        <input class="form-control" id="address" placeholder="Streetname nr, zipcode city" onchange=search()/>
       </form>
     </div>
     <div class="media">
@@ -67,46 +77,52 @@
     </p>
 </footer>
 
-</div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/js/bootstrap.min.js" integrity="sha512-ewfXo9Gq53e1q1+WDTjaHAGZ8UvCWq0eXONhwDuIoaH8xz2r96uoAYaQCm1oQhnBfRXrvJztNXFsTloJfgbL5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
 <script>
+  $("document").ready(function() {
 
-$(function () {
-
-  function populate(data) {
-      $results = $('#results tbody').empty();
-      $thead = $('#results thead th');
-      $(data).each(function () {
-          var line = '<tr>';
-          var row = this;
-          $thead.each(function () {
-            ref = $(this).data('col');
-            line += '<td>' + row[ref] + '</td>';
-          })
-          $results.append(line + '</tr>');
-      });
-  }
-
-  function refresh(e) {
-    e.stopPropagation();
-    search = $('#search').val();
-    if (search.length > 3) {
-        $.post('/api/production/yearly', {address: search}, populate, 'json');
+    function populate(data) {
+        $results = $('#results tbody').empty();
+        $thead = $('#results thead th');
+        $(data).each(function () {
+            var line = '<tr>';
+            var row = this;
+            $thead.each(function () {
+              ref = $(this).data('col');
+              line += '<td>' + row[ref] + '</td>';
+            })
+            $results.append(line + '</tr>');
+        });
     }
-    return false;
-  }
 
-  $('#search').parent().submit(refresh);
 
-  $.get('/api/production/yearly', {}, populate, 'json');
+    function refresh(e) {
+      e.stopPropagation();
+      search = $('#address').val();
+      if (search.length > 3) {
+          $.post('/api/production/yearly', {address: search}, populate, 'json');
+          $('#address').val('')
+      }
+      return false;
+    }
 
-});
+    $('#address').parent().submit(refresh);
+    
+    $("#address").autocomplete({
+      source: "addresssearch",
+      minLength: 2
+    });
+
+  });
 
 </script>
+
+
+
+
+
+
 <style>
     h3 {
          margin: 40px 0 20px;
