@@ -55,7 +55,6 @@
     <table class="table" id="results">
       <thead>
         <tr>
-          <th scope="col" data-col="id">#</th>
           <th scope="col" data-col="address">Address</th>
           <th scope="col" data-col="category">Photovoltaics</th>
           <th scope="col" data-col="total_power">PV Peak Power [kWp]</th>
@@ -122,6 +121,13 @@
       let angle = $('#angle').val();
       let aspect = $('#aspect').val();
       let mountingplace = $('#mountingplace').val();
+
+      if (angle.length == 0) {
+        angle = "35"
+      }
+      if (aspect.length == 0) {
+        aspect = "60"
+      }
 
       if ((angle < 0) || (angle > 90) || (isNaN(parseInt(angle)))) {
         $('#search_error').text("PV angle must be a number between 0 and 90.");

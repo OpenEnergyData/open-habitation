@@ -3,6 +3,7 @@ from api_helpers import *
 import falcon
 import json
 import functools
+import os
 
 from pathlib import Path
 from falcon import media
@@ -14,14 +15,25 @@ from swagger_ui import falcon_api_doc
 
 import psycopg2 as pg
 from psycopg2 import sql
+import dotenv
 
-host = "0.0.0.0"
-port = "5434"
-database="geo_admin"
-username = "testuser"
-password = "test123"
+dotenv.load_dotenv()
 
-connection = pg.connect(database=database, user=username, password=password, host=host, port=port)
+
+local_database = os.getenv("LOCAL_DATABASE")
+
+if local_database=="true":
+    host = os.getenv("POSTGRES_HOST")
+    port = os.getenv("POSTGRES_PORT")
+    username = os.getenv("POSTGRES_USER")
+    password = os.getenv("POSTGRES_PASSWORD")
+    database = "geo_admin"
+
+    connection = pg.connect(database=database, user=username, password=password, host=host, port=port)
+else:
+    # database connection taylored for heroku deployment:
+    DATABASE_URL = os.environ['DATABASE_URL']
+    connection = pg.connect(DATABASE_URL, sslmode='require')
 
 app = application = falcon.App()
 
@@ -34,17 +46,7 @@ json_handler = media.JSONHandler(
 result_cache = []
 
 
-class ElectricityProduction():
-    def on_get(self, req, res):
-        """Response to GET request for the building's electricity production 
 
-        Parameters
-        ----------
-        req : [type]
-            [description]
-        res : [type]
-            [description]
-        """
 
 class AddressSearch():
 
@@ -108,18 +110,22 @@ class ProductionResource:
         # query["mountingplace"] = obj.get('mountingplace')
 
         data = None
+        global result_cache
         for r in result_cache:
             if r['address']==query['address'] and r['angle']==query['angle'] and r['aspect']==query['aspect'] and r['mountingplace']==query['mountingplace']:
                 data = r
         if data is None:
             data = calculate_results(query)
             if data is not None:
-                data['id'] = len(result_cache) + 1
+                #data['id'] = len(result_cache) + 1
                 result_cache.append(data)
             else:
                 # TODO: throw 404 error
                 resp.status = falcon.HTTP_404
                 resp.text = "No data found for that address."
+
+        if len(result_cache) > 20:
+            result_cache = result_cache[-20:]
 
         resp.media = result_cache
         resp.media_handler = json_handler
