@@ -9,6 +9,17 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/css/bootstrap.min.css" integrity="sha512-6KY5s6UI5J7SVYuZB4S/CZMyPylqyyNZco376NM2Z8Sb8OxEdp02e1jkKk/wZxIEmjQ6DRCEBhni+gpr9c4tvA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/js/bootstrap.min.js" integrity="sha512-ewfXo9Gq53e1q1+WDTjaHAGZ8UvCWq0eXONhwDuIoaH8xz2r96uoAYaQCm1oQhnBfRXrvJztNXFsTloJfgbL5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script
+			  src="https://code.jquery.com/jquery-3.6.0.min.js"
+			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+			  crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="public/styles.css">
+
 </head>
 
 <body>
@@ -19,35 +30,52 @@
 <header>
     <h1>Open Habitation</h1>
     <p>Swiss open habitation API</p>
-    <p style="color:#FF0000">Please note: This basic example shows the expected annual energy production of a 1 kWp PV system at a specific site with slope 35° and aspect 60° (west - south-west). <hr/> The example is just valid for buildings with an existing PV system. </p>
 </header>
-
 <article>
     <h3>Basic Example</h3>
 
 
     <div class="ui-widget station">
       <form>
-        <input class="form-control" id="search" placeholder="Enter an address ..." />
+        <input name="address" class="form-control" id="address" placeholder="Streetname nr, zipcode city"()/>
+        <input name="angle" class="form-control" id="angle" placeholder="PV angle (optional), between 0-90, default 35"/>
+        <input name="aspect" class="form-control" id="aspect" placeholder="PV orientation (optional), between -180 and 180, default 60"/>
+        <!-- <label for="mountingplace">Mountingplace:</label>
+        <select name="mountingplace" id="mountingplace">
+          <option value="free">free-standing</option>
+          <option value="building">building-integrated</option>
+        </select> -->
       </form>
+      <p style="color:#FF0000", id="search_error"></p>
+      <button type="button", id="search_button">Search!</button>
     </div>
     <div class="media">
     </div>
-
-    <table class="table" id="results">
-      <thead>
-        <tr>
-          <th scope="col" data-col="id">#</th>
-          <th scope="col" data-col="address">Address</th>
-          <th scope="col" data-col="yearly_production">Production (annual)</th>
-          <th scope="col" data-col="category">Category</th>
-          <th scope="col" data-col="eco_rating">Eco Rating</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
+    <!-- <table class="table" id="results">
+        <thead>
+          <tr>
+            <th scope="col" data-col="id">#</th>
+            <th scope="col" data-col="address">Address</th>
+            <th scope="col" data-col="plant_type">Photovoltaics</th>
+            <th scope="col" data-col="total_power">PV Peak Power [kWp]</th>
+            <th scope="col" data-col="angle">PV Angle [°]</th>
+            <th scope="col" data-col="aspect">PV Aspect [°]</th>
+            <th scope="col" data-col="mountingplace">Mounting Place</th>
+            <th scope="col" data-col="yearly_production">PV Expected Annual Energy Production [kWh/a]</th>
+            <th scope="col" data-col="space_heating">Space Heating</th>
+            <th scope="col" data-col="hot_water">Domestic Hot Water</th>
+            <th scope="col" data-col="eco_rating">Eco Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table> -->
+      <div>
+        <pre id="json-display"></pre>
+      </div>
 </article>
+
+
 
 <footer class="footer">
   <hr>
@@ -67,83 +95,18 @@
 </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.1/js/bootstrap.min.js" integrity="sha512-ewfXo9Gq53e1q1+WDTjaHAGZ8UvCWq0eXONhwDuIoaH8xz2r96uoAYaQCm1oQhnBfRXrvJztNXFsTloJfgbL5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script type="module" src="public/app.js"></script>
+
 <script>
+  $("document").ready(function() {
 
-$(function () {
+    $("#address").autocomplete({
+      source: "api/addresssearch",
+      minLength: 2
+    });
 
-  function populate(data) {
-      $results = $('#results tbody').empty();
-      $thead = $('#results thead th');
-      $(data).each(function () {
-          var line = '<tr>';
-          var row = this;
-          $thead.each(function () {
-            ref = $(this).data('col');
-            line += '<td>' + row[ref] + '</td>';
-          })
-          $results.append(line + '</tr>');
-      });
-  }
-
-  function refresh(e) {
-    e.stopPropagation();
-    search = $('#search').val();
-    if (search.length > 3) {
-        $.post('/api/production/yearly', {address: search}, populate, 'json');
-    }
-    return false;
-  }
-
-  $('#search').parent().submit(refresh);
-
-  $.get('/api/production/yearly', {}, populate, 'json');
-
-});
-
+  });
 </script>
-<style>
-    h3 {
-         margin: 40px 0 20px;
-    }
-
-    .ui-widget,
-    .ui-widget input {
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-    }
-
-    .ui-autocomplete {
-        text-align: left;
-    }
-
-    strong {
-        color: #d10505;
-    }
-
-    .column {
-        float: right;
-    }
-
-    .media {
-        padding-top: 30px;
-    }
-
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    td, th {
-        padding: 8px;
-        line-height: 18px;
-        vertical-align: top;
-        border-bottom: 1px solid #DDD;
-    }
-
-</style>
 
 </body>
 </html>

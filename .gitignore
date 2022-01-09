@@ -5,6 +5,16 @@ yarn.lock
 .flaskenv
 coverage.xml
 
+# SECRETS
+.env
+
+# .csv files
+*.csv
+
+# python cache stuff
+__pycache__
+*.ipynb_checkpoints
+
 # C extensions
 *.so
 

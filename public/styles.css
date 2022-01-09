@@ -1,0 +1,47 @@
+h3 {
+    margin: 40px 0 20px;
+}
+
+.ui-widget,
+.ui-widget input {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+}
+
+.ui-autocomplete {
+    text-align: left;
+}
+
+strong {
+    color: #d10505;
+}
+
+.column {
+    float: right;
+}
+
+.media {
+    padding-top: 30px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td, th {
+    padding: 8px;
+    line-height: 18px;
+    vertical-align: top;
+    border-bottom: 1px solid #DDD;
+    /* word-wrap: break-word;
+    overflow-wrap: break-word;
+    width: 10%; */
+}
+
+pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: red; }

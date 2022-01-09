@@ -20,15 +20,6 @@ To update the requirements file:
 poetry export --without-hashes -f requirements.txt > requirements.txt
 ```
 
-At this point you should see the message "Serving on port..."
-
-Test the API using a REST client such as [RESTer](https://github.com/frigus02/RESTer) with queries such as:
-
-http://localhost:8000/production/yearly
-
-
-## Postman settings
-<img width="960" alt="postman_parameters" src="https://user-images.githubusercontent.com/53759085/134770099-a13cd3fb-7d9d-4a53-9b60-43879fde8710.png">
 
 
 ## License
